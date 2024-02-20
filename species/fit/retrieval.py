@@ -2862,6 +2862,17 @@ class AtmosphericRetrieval:
 
                 model_flux = spec_interp(model_wavel)
 
+            # Shift the wavelengths of the model spectrum to air wavelengths
+            if spec_item in self.apply_air_shift:
+                #  AIR = VAC / (1.0 + 2.735182E-4 + 131.4182 / VAC^2 + 2.76249E8 / VAC^4) IAU formula
+                # Convert wavelength to angstrom (from microns)
+                model_wavel = model_wavel * 1e4
+                model_wavel = model_wavel / (
+                    1.0 + 2.735182E-4 + 131.4182 / model_wavel ** 2 + 2.76249E8 / model_wavel ** 4
+                )
+                model_wavel = model_wavel / 1e4
+
+
             # Shift the wavelengths of the data with
             # the fitted calibration parameter
             data_wavel = self.spectrum[spec_item][0][:, 0] + wavel_cal[spec_item]
@@ -3126,6 +3137,7 @@ class AtmosphericRetrieval:
         check_phot_press: Optional[float] = None,
         apply_rad_vel: Optional[List[str]] = None,
         apply_vsini: Optional[List[str]] = None,
+        apply_air_shift: Optional[List[str]] = None,
     ) -> None:
         """
         Function for running the atmospheric retrieval. The parameter
@@ -3398,6 +3410,7 @@ class AtmosphericRetrieval:
         self.cross_corr = cross_corr
         self.apply_rad_vel = apply_rad_vel
         self.apply_vsini = apply_vsini
+        self.apply_air_shift = apply_air_shift
 
         print(f"P-T profile: {self.pt_profile}")
         print(f"Chemistry: {self.chemistry}")
@@ -3430,6 +3443,11 @@ class AtmosphericRetrieval:
 
         else:
             print(f"Fit vsin(i): None")
+        
+        if self.apply_air_shift is None:
+            apply_air_shift = []
+        elif self.apply_air_shift is True:
+            self.apply_air_shift = list(self.spectrum.keys())
 
         # Printing uniform and normal priors
 

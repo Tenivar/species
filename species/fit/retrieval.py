@@ -3448,6 +3448,8 @@ class AtmosphericRetrieval:
             apply_air_shift = []
         elif self.apply_air_shift is True:
             self.apply_air_shift = list(self.spectrum.keys())
+        
+        print(f"Fit air shift: {self.apply_air_shift}")
 
         # Printing uniform and normal priors
 
@@ -3986,6 +3988,9 @@ class AtmosphericRetrieval:
                 abund_nodes=abund_nodes,
                 prior=prior,
                 check_phot_press=check_phot_press,
+                apply_rad_vel=kwargs.get("apply_rad_vel", None),
+                apply_vsini=kwargs.get("apply_vsini", None),
+                apply_air_shift=kwargs.get("apply_air_shift", None),
             )
 
         @typechecked

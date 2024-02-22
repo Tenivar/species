@@ -259,6 +259,7 @@ class ReadRadtrans:
         wavel_resample: Optional[np.ndarray] = None,
         plot_contribution: Optional[Union[bool, str]] = False,
         temp_nodes: Optional[Union[int, np.integer]] = None,
+        apply_air_shift: Optional[bool] = False,
     ) -> ModelBox:
         """
         Function for calculating a model spectrum with
@@ -1194,6 +1195,20 @@ class ReadRadtrans:
             # wavelength sampling, with constant R
             spec_interp = interp1d(wavel_even, spec_broad)
             flux = spec_interp(wavelength)
+        
+        if "rad_vel" in model_param:
+            # Change speed of light from (m/s) to (km/s)
+            wavelength *= 1.0 - model_param["rad_vel"] / (constants.LIGHT * 1e-3)
+
+        # Apply the vacuum to air wavelength conversion
+        if apply_air_shift:
+            #  AIR = VAC / (1.0 + 2.735182E-4 + 131.4182 / VAC^2 + 2.76249E8 / VAC^4) IAU formula
+            # Convert wavelength to angstrom (from microns)
+            wavelength = wavelength * 1e4
+            wavelength = wavelength / (
+                1.0 + 2.735182E-4 + 131.4182 / wavelength ** 2 + 2.76249E8 / wavelength ** 4
+            )
+            wavelength = wavelength / 1e4
 
         # Convolve the spectrum with a Gaussian LSF
 
@@ -1202,9 +1217,8 @@ class ReadRadtrans:
 
         # Apply a radial velocity shift to the wavelengths
 
-        if "rad_vel" in model_param:
-            # Change speed of light from (m/s) to (km/s)
-            wavelength *= 1.0 - model_param["rad_vel"] / (constants.LIGHT * 1e-3)
+        
+
 
         # Resample the spectrum
 

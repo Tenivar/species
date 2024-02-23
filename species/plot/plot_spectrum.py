@@ -248,7 +248,7 @@ def plot_spectrum(
         if param_item not in param_fmt:
             param_fmt[param_item] = ".2f"
 
-    param_add = ["flux_scaling", "flux_offset"]
+    param_add = ["flux_scaling", "flux_offset", "pt_smooth"]
 
     for param_item in param_add:
         if param_item not in param_fmt:

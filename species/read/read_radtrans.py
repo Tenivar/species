@@ -1198,7 +1198,7 @@ class ReadRadtrans:
         
         if "rad_vel" in model_param:
             # Change speed of light from (m/s) to (km/s)
-            wavelength *= 1.0 - model_param["rad_vel"] / (constants.LIGHT * 1e-3)
+            wavelength *= 1.0 + model_param["rad_vel"] / (constants.LIGHT * 1e-3)
 
         # Apply the vacuum to air wavelength conversion
         if apply_air_shift:

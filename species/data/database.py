@@ -3746,6 +3746,7 @@ class Database:
         random: Optional[int],
         wavel_range: Optional[Union[Tuple[float, float], str]] = None,
         spec_res: Optional[float] = None,
+        apply_air_shift: Optional[bool] = False,
     ) -> Tuple[List[ModelBox], Union[Any]]:
         """
         Function for extracting random spectra from the
@@ -4016,6 +4017,26 @@ class Database:
                 sample=item,
             )
 
+            # If rad_vel in parameters, apply it and add it to the ModelBox
+            if "rad_vel" in indices.keys():
+                rad_vel = item[indices["rad_vel"]]
+                # Shift the wavelength : 
+                model_box.wavelength *= 1.0 + rad_vel / (constants.LIGHT * 1e-3)
+                model_box.parameters["rad_vel"] = rad_vel
+            
+            # If air_shift in parameters, apply it and add it to the ModelBox
+            if apply_air_shift : 
+                model_wavel = model_box.wavelength
+                #  AIR = VAC / (1.0 + 2.735182E-4 + 131.4182 / VAC^2 + 2.76249E8 / VAC^4) IAU formula
+                # Convert wavelength to angstrom (from microns)
+                model_wavel = model_wavel * 1e4
+                model_wavel = model_wavel / (
+                    1.0 + 2.735182E-4 + 131.4182 / model_wavel ** 2 + 2.76249E8 / model_wavel ** 4
+                )
+                model_wavel = model_wavel / 1e4
+                model_box.wavelength = model_wavel
+                
+                
             # Add the ModelBox to the list
 
             boxes.append(model_box)
